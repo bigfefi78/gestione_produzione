@@ -1,42 +1,20 @@
 import json
+import sys
+from PyQt5 import QtWidgets, QtGui
 
 with open('json_file\info.json') as json_file:
     data = json.load(json_file)
+    print(json.dumps(data, indent=6))
 
-print(json.dumps(data, indent=6))
+print(__name__)
 
-# with open('dump.txt', 'w') as outfile:
-#     json.dump(data, outfile)
 
-#     json.dump(data, outfile)
+if __name__ == "__main__":
 
-    # for p in data:
-    #     print(p)# data = {}
+    app = QtGui.QGuiApplication(sys.argv)
 
-# data['people'] = []
-# data['people'].append({
-#     'name': 'Scott',
-#     'website': 'stackabuse.com',
-#     'from': 'Nebraska'
-# })
-# data['people'].append({
-#     'name': 'Larry',
-#     'website': 'google.com',
-#     'from': 'Michigan'
-# })
-# data['people'].append({
-#     'name': 'Tim',
-#     'website': 'apple.com',
-#     'from': 'Alabama'
-# })
-#
-# with open('data.txt', 'w') as outfile:
-#     json.dump(data, outfile)
-# # data = Db("test")
-# # data.name = "ciccio"
-# # data.create_connection(data.name + ".db")
-# # sql_create_projects_table = """ CREATE TABLE IF NOT EXISTS elenco_codici (
-#                                         codice  text PRIMARY KEY,
-#                                         tipo text NOT NULL,
-#                                         descrizione text
-#                                     ); """
+    wid = QtWidgets.QMainWindow()
+    wid.setWindowTitle("Test")
+    wid.show()
+
+#     sys.exit(app.exec())
