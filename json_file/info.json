@@ -1,0 +1,41 @@
+{
+  "CONFIG": {
+    "BANCHI": {
+      "0407477138": {
+        "Descrizione": "S100",
+        "Ciclo": {
+          "Op 1": {
+            "Descrizione": "Desc. Fase 1",
+            "Durata": 25
+          },
+          "Op 2": {
+            "Descrizione": "Desc. Fase 2",
+            "Durata": 50
+          },
+          "Op 3": {
+            "Descrizione": "Desc. Fase 3",
+            "Durata": 5
+          }
+        }
+      },
+      "0407477141": {},
+      "0407477143": {},
+      "0407476662": {},
+      "0407476664": {},
+      "0407476666": {}
+    },
+    "FORCHETTE": {
+      "35T5019501": {},
+      "35T5019502": {},
+      "35T5019503": {}
+    }
+  },
+  "PRODUZIONE":{
+    "BANCHI": {
+
+    },
+    "FORCHETTE": {
+
+    }
+  }
+}
