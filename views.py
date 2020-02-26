@@ -1,5 +1,6 @@
 from PyQt5 import QtWidgets, QtSql, QtGui
 
+
 class PersonWidget(QtWidgets.QWidget):
     def __init__(self, parent=None):
         super(PersonWidget, self).__init__(parent)
@@ -10,6 +11,7 @@ class PersonWidget(QtWidgets.QWidget):
         model.setTable("person")
         model.select()
         view.setModel(model)
+
 
 class ItemsWidget(QtWidgets.QWidget):
     def __init__(self, parent=None):

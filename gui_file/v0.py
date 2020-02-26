@@ -7,7 +7,7 @@
 # WARNING! All changes made in this file will be lost!
 
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets, QtSql
 
 
 class MyForm(object):
@@ -42,6 +42,11 @@ class MyForm(object):
         self.pushButton2.setObjectName("pushButton2")
         self.verticalLayout.addWidget(self.splitter_2)
         self.gridLayout.addLayout(self.verticalLayout, 0, 0, 1, 1)
+
+        model = QtSql.QSqlTableModel()
+        model.setTable("matricole")
+        model.select()
+        self.tableView1.setModel(model)
 
         self.retranslateUi(Form)
         QtCore.QMetaObject.connectSlotsByName(Form)

@@ -2,18 +2,22 @@ from PyQt5 import QtCore, QtGui, QtSql, QtWidgets
 from PyQt5.QtSql import QSqlDatabase, QSqlTableModel
 from gui_file.v0 import MyForm
 import sys
+import wx
 
 def createConnection():
     print("Creazione connessione...")
     db = QSqlDatabase.addDatabase("QSQLITE")
     db.setDatabaseName("db\database.db")
     if not db.open():
-        QtWidgets.QMessageBox.critical(None, "Cannot open database ")
+        QtWidgets.QMessageBox.critical(None, "Cannot open database ",
+                                       "Wrong DRIVER ?",
+                                       QtWidgets.QMessageBox.Cancel)
         return False
     return True
 
 
 class Matricole(QtWidgets.QWidget):
+    """View"""
     def __init__(self, parent=None):
         super(Matricole, self).__init__(parent)
         model = QtSql.QSqlTableModel(self)
