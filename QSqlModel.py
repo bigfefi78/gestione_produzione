@@ -1,10 +1,9 @@
 from PyQt4 import QtCore, QtGui, QtSql
 from PyQt4.QtCore import QVariant, Qt
-from PyQt4.QtCore import QVariant, Qt
 from PyQt4.QtSql import QSqlTableModel, QSqlDatabase, QSqlQueryModel
 from PyQt4.QtGui import (QApplication, QTableView, QLabel, QItemDelegate,
-                             QStyledItemDelegate, QStyle, QStyleOptionProgressBar,
-                             QSpinBox)
+                        QStyledItemDelegate, QStyle, QStyleOptionProgressBar,
+                        QSpinBox)
 
 # from PyQt4 import QtSql, QtGui
 
@@ -34,6 +33,7 @@ def createConnection():
 
 class CustomSqlModel(QtSql.QSqlQueryModel):
     def data(self, index, role):
+        print("Model data!!!!!")
         value = super(CustomSqlModel, self).data(index, role)
         if value is not None and role == QtCore.Qt.DisplayRole:
             if index.column() == 0:
@@ -71,9 +71,12 @@ class EditableSqlModel(QtSql.QSqlQueryModel):
             ok = self.setLastName(id, value)
 
         self.refresh()
+        print("Esito : ", ok)
         return ok
 
     def refresh(self):
+        print("refreshing...")
+        initializeModel(plainModel)
         self.setQuery('select * from person')
         self.setHeaderData(0, QtCore.Qt.Horizontal, "ID")
         self.setHeaderData(1, QtCore.Qt.Horizontal, "First name")
