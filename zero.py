@@ -73,7 +73,7 @@ class MyCustomQSqlModel(QtSql.QSqlQueryModel):
     def flags(self, index):
         flags = super(MyCustomQSqlModel, self).flags(index)
 
-        if index.column() in (0, 1):
+        if index.column() == 3:
             flags |= QtCore.Qt.ItemIsEditable
 
         return flags
@@ -87,7 +87,6 @@ class MyCustomQSqlModel(QtSql.QSqlQueryModel):
             return QtGui.QColor(QtCore.Qt.darkBlue)
 
         if role == QtCore.Qt.FontRole:
-            print("Qfont")
             font = QtGui.QFont('Courier new')
             font.setPixelSize(14)
             # font.setWeight(75)
@@ -97,14 +96,52 @@ class MyCustomQSqlModel(QtSql.QSqlQueryModel):
 
         return value
 
-    def setData(self, index, value, role):
+    def setData(self, index, value, role=None):
         print("setData method...")
-        if index.column() != 1:
+        if index.column() != 3:
             print("False, index column = ", index.column())
             return False
         else:
             print("Colonna: ", index.column(), " valore:", value)
             return True
+
+    def headerData(self, section, orientation, role):
+
+        if role == QtCore.Qt.DisplayRole and orientation == QtCore.Qt.Horizontal:
+            return "ecco%".format(section)
+
+
+
+class MyCustomDelegate(QStyledItemDelegate):
+    def paint(self, painter, option, index):
+        item_data = index.data(Qt.DisplayRole)  # QVariant corrispondente
+        opts = QStyleOptionProgressBar()
+        opts.rect = option.rect
+        opts.minimum = 0  # limite minimo progress bar
+        opts.maximum = 100  # limite massimo progress bar
+        opts.text = "{}/{} [{}%]".format(item_data, 100, int(item_data))
+        opts.text = "{}%".format(int(item_data))
+        opts.textAlignment = Qt.AlignCenter
+        opts.textVisible = True
+        opts.progress = int(item_data)
+        QApplication.style().drawControl(QStyle.CE_ProgressBar, opts, painter)
+
+    def createEditor(self, parent, option, index):
+        print("[DELEGATE] Creating editor for index %s..." % index.row())
+        editor = QSpinBox(parent)
+        editor.setRange(0, 100)
+        return editor
+
+    def setEditorData(self, editor, index):
+        print("[DELEGATE] Updating view for index %s..." % index.row())
+        value = index.data(Qt.DisplayRole)
+        editor.setValue(int(value))
+
+    def setModelData(self, editor, model, index):
+        print("[DELEGATE] Setting data to model at index %s..." % index.row())
+        value = editor.value()
+        variant = QtCore.QVariant(value)
+        model.setData(index, variant)
 
 
 if __name__ == "__main__":
@@ -113,6 +150,8 @@ if __name__ == "__main__":
     win = MyCustomWindow()
     model = MyCustomQSqlModel()
     model.setQuery("SELECT * FROM matricole")
+    delegate = MyCustomDelegate()
     win.widget.tableView1.setModel(model)
+    win.widget.tableView1.setItemDelegateForColumn(3, delegate)
     win.show()
     sys.exit(app.exec_())
