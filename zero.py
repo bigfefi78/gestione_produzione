@@ -73,13 +73,22 @@ class MyCustomQSqlModel(QtSql.QSqlQueryModel):
     def flags(self, index):
         flags = super(MyCustomQSqlModel, self).flags(index)
 
-        if index.column() == 3:
+        if index.column() in (0, 1):
             flags |= QtCore.Qt.ItemIsEditable
 
         return flags
 
     def data(self, index, role):
         value = super(MyCustomQSqlModel, self).data(index, role)
+
+        # if index.row() == 0:
+        #     self.intestazione = []
+        #     for i in range(model.columnCount()):
+        #         self.intestazione.append(model.headerData(i, Qt.Horizontal))
+        #
+        #     # print(model.headerData(i, Qt.Horizontal))
+        #     print(self.intestazione)
+
         if value is not None and role == QtCore.Qt.DisplayRole:
             return value
 
@@ -96,20 +105,14 @@ class MyCustomQSqlModel(QtSql.QSqlQueryModel):
 
         return value
 
-    def setData(self, index, value, role=None):
+    def setData(self, index, value, role):
         print("setData method...")
-        if index.column() != 3:
+        if index.column() != 1:
             print("False, index column = ", index.column())
             return False
         else:
             print("Colonna: ", index.column(), " valore:", value)
             return True
-
-    def headerData(self, section, orientation, role):
-
-        if role == QtCore.Qt.DisplayRole and orientation == QtCore.Qt.Horizontal:
-            return "ecco%".format(section)
-
 
 
 class MyCustomDelegate(QStyledItemDelegate):
@@ -119,7 +122,7 @@ class MyCustomDelegate(QStyledItemDelegate):
         opts.rect = option.rect
         opts.minimum = 0  # limite minimo progress bar
         opts.maximum = 100  # limite massimo progress bar
-        opts.text = "{}/{} [{}%]".format(item_data, 100, int(item_data))
+        # opts.text = "{}/{} [{}%]".format(item_data, 100, int(item_data))
         opts.text = "{}%".format(int(item_data))
         opts.textAlignment = Qt.AlignCenter
         opts.textVisible = True
@@ -149,9 +152,18 @@ if __name__ == "__main__":
     MyCustomConnection()
     win = MyCustomWindow()
     model = MyCustomQSqlModel()
-    model.setQuery("SELECT * FROM matricole")
-    delegate = MyCustomDelegate()
+    model.setQuery("SELECT * FROM tableView1")
     win.widget.tableView1.setModel(model)
-    win.widget.tableView1.setItemDelegateForColumn(3, delegate)
-    win.show()
+
+    for column in range(model.columnCount(QtCore.QModelIndex())-1):
+        win.widget.tableView1.resizeColumnToContents(column)
+        size = win.widget.tableView1.columnWidth(column)
+        print(size)
+        win.widget.tableView1.setColumnWidth(column, size+50)
+
+    win.widget.tableView1.setColumnWidth(model.columnCount(QtCore.QModelIndex())-1, 650)
+
+    delegate = MyCustomDelegate()
+    win.widget.tableView1.setItemDelegateForColumn(5, delegate)
+    win.showMaximized()
     sys.exit(app.exec_())
