@@ -1,7 +1,6 @@
 from PyQt5 import QtCore, QtGui, QtSql, QtWidgets
 from PyQt5.QtWidgets import *
 from PyQt5.QtSql import QSqlDatabase, QSqlTableModel
-from gui_file.v0 import MyForm
 from PyQt5.QtCore import Qt
 import sys
 
@@ -17,51 +16,33 @@ def MyCustomConnection():
         sys.exit(-1234)
 
 
-class MyCustomWidget(QtWidgets.QWidget):
-    """
-    Base widget definition
-    that acts as a MVC view
-    """
-    def __init__(self, parent=None):
-        super(MyCustomWidget, self).__init__(parent)
-
-        self.tableView1 = QtWidgets.QTableView()
-        self.tableView2 = QtWidgets.QTableView()
-        self.columnView = QtWidgets.QColumnView()
-        self.pushBtn = QtWidgets.QPushButton()
-
-        self.tableView1.setAlternatingRowColors(True)
-        self.tableView1.resizeColumnsToContents()
-
-        self.tableView2.setAlternatingRowColors(True)
-
-        self.HLayout = QtWidgets.QHBoxLayout()
-        self.VLayout = QtWidgets.QVBoxLayout()
-
-        self.VLayout.addWidget(self.tableView1)
-        self.VLayout.addWidget(self.tableView2)
-        self.VLayout.addWidget(self.columnView)
-
-        self.HLayout.addLayout(self.VLayout)
-        self.HLayout.addWidget(self.pushBtn)
-
-        self.setLayout(self.HLayout)
+def getHeaders():
+    query = QtSql.QSqlQuery()
+    query.exec_('SELECT *  FROM tableView1')
+    head = []
+    i = 0
+    while i < query.record().count():
+        head.append(query.record().fieldName(i))
+        i += 1
+    return head
 
 
-class MyCustomWindow(QtWidgets.QMainWindow):
-    """
-    Main window definition
-    """
-    def __init__(self, parent=None):
-        super(MyCustomWindow, self).__init__(parent)
+class MySignal(QtCore.QObject):
 
-        self.model = MyCustomQSqlModel()
+    trigger = QtCore.pyqtSignal(str)
 
-        self.widget = MyCustomWidget()
-        # self.widget.tableView1.setModel(self.model.model)
-        self.push = QtWidgets.QPushButton()
-        self.setWindowTitle("My custom MVC implementation")
-        self.setCentralWidget(self.widget)
+    def connect_and_emit_trigger(self, pro):
+        # Connect the trigger signal to a slot.
+        self.trigger.connect(self.handle_trigger)
+        self.trigger.connect(pro.setFilterRegExp)
+
+        # Emit the signal.
+        self.trigger.emit('30')
+
+    def handle_trigger(self, stringa):
+        # Show that the slot has been called.
+
+        print("trigger signal received with parameter -->", stringa)
 
 
 class MyCustomQSqlModel(QtSql.QSqlQueryModel):
@@ -73,7 +54,7 @@ class MyCustomQSqlModel(QtSql.QSqlQueryModel):
     def flags(self, index):
         flags = super(MyCustomQSqlModel, self).flags(index)
 
-        if index.column() in (0, 1):
+        if index.column() is not None:
             flags |= QtCore.Qt.ItemIsEditable
 
         return flags
@@ -81,36 +62,30 @@ class MyCustomQSqlModel(QtSql.QSqlQueryModel):
     def data(self, index, role):
         value = super(MyCustomQSqlModel, self).data(index, role)
 
-        # if index.row() == 0:
-        #     self.intestazione = []
-        #     for i in range(model.columnCount()):
-        #         self.intestazione.append(model.headerData(i, Qt.Horizontal))
-        #
-        #     # print(model.headerData(i, Qt.Horizontal))
-        #     print(self.intestazione)
-
         if value is not None and role == QtCore.Qt.DisplayRole:
             return value
 
         if role == QtCore.Qt.TextColorRole and index.row() % 2:
-            return QtGui.QColor(QtCore.Qt.darkBlue)
+            return QtGui.QColor(QtCore.Qt.blue)
+
+        if role == QtCore.Qt.TextAlignmentRole:
+            return QtCore.Qt.AlignCenter
 
         if role == QtCore.Qt.FontRole:
             font = QtGui.QFont('Courier new')
-            font.setPixelSize(14)
-            # font.setWeight(75)
+            font.setPixelSize(16)
             font.setCapitalization(QtGui.QFont.AllUppercase)
             return QtCore.QVariant(font)
-            # return QtGui.QFont.Bold
 
         return value
 
     def setData(self, index, value, role):
         print("setData method...")
-        if index.column() != 1:
+        if index.column() != 5:
             print("False, index column = ", index.column())
             return False
         else:
+            print("modificata colonna 6")
             print("Colonna: ", index.column(), " valore:", value)
             return True
 
@@ -144,26 +119,113 @@ class MyCustomDelegate(QStyledItemDelegate):
         print("[DELEGATE] Setting data to model at index %s..." % index.row())
         value = editor.value()
         variant = QtCore.QVariant(value)
-        model.setData(index, variant)
+        # model.clear()
+        # model.setQuery("SELECT * FROM tableView1")
+        model.setData(index, variant, Qt.DisplayRole)
+        return
+
+
+class MyCustomProxyFilter(QtCore.QSortFilterProxyModel):
+    def __init__(self):
+        super(MyCustomProxyFilter, self).__init__()
+        self.setFilterCaseSensitivity(QtCore.Qt.CaseInsensitive)
+        self.setDynamicSortFilter(True)
+        self.setFilterCaseSensitivity(QtCore.Qt.CaseInsensitive)
+
+    @QtCore.pyqtSlot(str)
+    def regularFilterFormat(self, value):
+        regstring = value.replace(" ", "|")
+        self.setFilterRegExp(regstring)
+
+
+class MyCustomWidget(QtWidgets.QWidget):
+    """
+    Base widget definition
+    that acts as a MVC view
+    """
+    def __init__(self, parent=None):
+        super(MyCustomWidget, self).__init__(parent)
+
+        self.tableView1 = QtWidgets.QTableView()
+        self.tableView2 = QtWidgets.QTableView()
+        self.columnView = QtWidgets.QColumnView()
+
+        self.pushBtn = QtWidgets.QPushButton('Clear')
+
+        self.clearButton = QtWidgets.QPushButton()
+        self.filterLine = QtWidgets.QLineEdit()
+
+        self.pushBtn.clicked.connect(self.filterLine.clear)
+        self.tableView1.setAlternatingRowColors(True)
+        self.tableView1.resizeColumnsToContents()
+        self.tableView1.setSelectionBehavior(QAbstractItemView.SelectRows)
+
+        self.tableView2.setAlternatingRowColors(True)
+
+        self.HLayout = QtWidgets.QHBoxLayout()
+        self.HLayout1 = QtWidgets.QHBoxLayout()
+        self.VLayout = QtWidgets.QVBoxLayout()
+
+        self.HLayout1.addWidget(self.filterLine)
+        self.HLayout1.addWidget(self.pushBtn)
+
+        self.VLayout.addLayout(self.HLayout1)
+        self.VLayout.addWidget(self.tableView1)
+        self.VLayout.addWidget(self.tableView2)
+        self.VLayout.addWidget(self.columnView)
+
+        self.HLayout.addLayout(self.VLayout)
+        self.HLayout.addWidget(self.pushBtn)
+
+        self.setLayout(self.HLayout)
+
+
+class MyCustomWindow(QtWidgets.QMainWindow):
+    """
+    Main window definition
+    """
+    def __init__(self, parent=None):
+        super(MyCustomWindow, self).__init__(parent)
+
+        self.model_1 = MyCustomQSqlModel()
+        self.model_1.setQuery("SELECT * FROM tableView1")
+
+        self.proxy = MyCustomProxyFilter()
+        self.proxy.setFilterKeyColumn(6)
+        self.proxy.setSourceModel(self.model_1)
+
+        self.widget = MyCustomWidget()
+        self.widget.filterLine.textChanged.connect(self.proxy.regularFilterFormat)
+        self.widget.tableView1.setModel(self.proxy)
+
+        self.delegate = MyCustomDelegate()
+        self.widget.tableView1.setItemDelegateForColumn(5, self.delegate)
+
+        self.widget.tableView1.clicked.connect(self.view1Selection)
+        self.push = QtWidgets.QPushButton()
+        self.setWindowTitle("My custom MVC implementation")
+        self.setCentralWidget(self.widget)
+
+    def view1Selection(self, index):
+        print(self.model_1.columnCount())
+        print(self.model_1.data(index, QtCore.Qt.DisplayRole))
 
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     MyCustomConnection()
-    win = MyCustomWindow()
-    model = MyCustomQSqlModel()
-    model.setQuery("SELECT * FROM tableView1")
-    win.widget.tableView1.setModel(model)
 
-    for column in range(model.columnCount(QtCore.QModelIndex())-1):
+    win = MyCustomWindow()
+
+    headers = getHeaders()
+    print(headers)
+
+    for column in range(win.widget.tableView1.model().columnCount(QtCore.QModelIndex())-1):
         win.widget.tableView1.resizeColumnToContents(column)
         size = win.widget.tableView1.columnWidth(column)
-        print(size)
         win.widget.tableView1.setColumnWidth(column, size+50)
 
-    win.widget.tableView1.setColumnWidth(model.columnCount(QtCore.QModelIndex())-1, 650)
+    win.widget.tableView1.setColumnWidth(win.widget.tableView1.model().columnCount(QtCore.QModelIndex())-1, 650)
 
-    delegate = MyCustomDelegate()
-    win.widget.tableView1.setItemDelegateForColumn(5, delegate)
-    win.showMaximized()
+    win.show()
     sys.exit(app.exec_())

@@ -2,7 +2,6 @@ from PyQt5 import QtCore, QtGui, QtSql, QtWidgets
 from PyQt5.QtSql import QSqlDatabase, QSqlTableModel
 from gui_file.v0 import MyForm
 import sys
-import wx
 
 def createConnection():
     print("Creazione connessione...")
