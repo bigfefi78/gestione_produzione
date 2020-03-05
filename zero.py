@@ -27,22 +27,22 @@ def getHeaders():
     return head
 
 
-class MySignal(QtCore.QObject):
-
-    trigger = QtCore.pyqtSignal(str)
-
-    def connect_and_emit_trigger(self, pro):
-        # Connect the trigger signal to a slot.
-        self.trigger.connect(self.handle_trigger)
-        self.trigger.connect(pro.setFilterRegExp)
-
-        # Emit the signal.
-        self.trigger.emit('30')
-
-    def handle_trigger(self, stringa):
-        # Show that the slot has been called.
-
-        print("trigger signal received with parameter -->", stringa)
+# class MySignal(QtCore.QObject):
+#
+#     trigger = QtCore.pyqtSignal(str)
+#
+#     def connect_and_emit_trigger(self, pro):
+#         # Connect the trigger signal to a slot.
+#         self.trigger.connect(self.handle_trigger)
+#         self.trigger.connect(pro.setFilterRegExp)
+#
+#         # Emit the signal.
+#         self.trigger.emit('30')
+#
+#     def handle_trigger(self, stringa):
+#         # Show that the slot has been called.
+#
+#         print("trigger signal received with parameter -->", stringa)
 
 
 class MyCustomQSqlModel(QtSql.QSqlQueryModel):
@@ -191,7 +191,7 @@ class MyCustomWindow(QtWidgets.QMainWindow):
         self.model_1.setQuery("SELECT * FROM tableView1")
 
         self.proxy = MyCustomProxyFilter()
-        self.proxy.setFilterKeyColumn(6)
+        self.proxy.setFilterKeyColumn(5)
         self.proxy.setSourceModel(self.model_1)
 
         self.widget = MyCustomWidget()
@@ -199,7 +199,8 @@ class MyCustomWindow(QtWidgets.QMainWindow):
         self.widget.tableView1.setModel(self.proxy)
 
         self.delegate = MyCustomDelegate()
-        self.widget.tableView1.setItemDelegateForColumn(5, self.delegate)
+        self.widget.tableView1.setItemDelegateForColumn(4, self.delegate)
+        self.widget.tableView1.setColumnHidden(5, True)
 
         self.widget.tableView1.clicked.connect(self.view1Selection)
         self.push = QtWidgets.QPushButton()
@@ -227,5 +228,5 @@ if __name__ == "__main__":
 
     win.widget.tableView1.setColumnWidth(win.widget.tableView1.model().columnCount(QtCore.QModelIndex())-1, 650)
 
-    win.show()
+    win.showMaximized()
     sys.exit(app.exec_())
